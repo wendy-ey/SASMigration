@@ -1,3 +1,5 @@
+#This file can analyze one egp file comprehensively 
+
 import zipfile
 import os
 import re
