@@ -140,6 +140,22 @@ def analyze_xml_structure(xml_path):
 print("🔎 Extracting EGP file...")
 print(f"   Analyzing: {os.path.abspath(egp_file_path)}")
 
+# Clean up extraction directory at start to ensure fresh analysis
+if os.path.exists(output_dir):
+    import shutil
+    import stat
+    try:
+        # Force remove with proper error handling for Windows
+        def handle_remove_readonly(func, path, exc):
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        
+        shutil.rmtree(output_dir, onerror=handle_remove_readonly)
+        print(f"   🧹 Cleared previous extraction")
+    except Exception as e:
+        print(f"   ⚠️  Warning: Could not fully clear previous extraction: {e}")
+        print(f"   ➡️  Continuing with extraction...")
+
 # Extract EGP file
 try:
     with zipfile.ZipFile(egp_file_path, 'r') as zip_ref:

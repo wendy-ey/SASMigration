@@ -84,6 +84,18 @@ def analyze_egp_comprehensive(egp_path):
     # Extract to temp directory
     temp_dir = f"temp_{filename.replace('.egp', '').replace(' ', '_').replace('-', '_')}"
     
+    # Clean up any existing temp directory first
+    if os.path.exists(temp_dir):
+        import stat
+        try:
+            def handle_remove_readonly(func, path, exc):
+                os.chmod(path, stat.S_IWRITE)
+                func(path)
+            
+            shutil.rmtree(temp_dir, onerror=handle_remove_readonly)
+        except Exception as e:
+            print(f"  Warning: Could not clear temp directory: {e}")
+    
     try:
         with zipfile.ZipFile(egp_path, 'r') as zip_ref:
             zip_ref.extractall(temp_dir)
@@ -167,9 +179,14 @@ def analyze_egp_comprehensive(egp_path):
     
     # Cleanup temp directory
     try:
-        shutil.rmtree(temp_dir)
-    except:
-        pass
+        import stat
+        def handle_remove_readonly(func, path, exc):
+            os.chmod(path, stat.S_IWRITE)
+            func(path)
+        
+        shutil.rmtree(temp_dir, onerror=handle_remove_readonly)
+    except Exception as e:
+        print(f"  Warning: Could not cleanup temp directory: {e}")
     
     return {
         'filename': filename,
